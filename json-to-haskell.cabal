@@ -1,0 +1,89 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: b6fe0a854b5c1f554a7592a733cc7c5ddeac63de0737216739d1d773dc56de60
+
+name:           json-to-haskell
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/json-to-haskell#readme>
+homepage:       https://github.com/githubuser/json-to-haskell#readme
+bug-reports:    https://github.com/githubuser/json-to-haskell/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2020 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/json-to-haskell
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_json_to_haskell
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , aeson-extra
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , mtl
+    , recursion-schemes
+    , text
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable json-to-haskell-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_json_to_haskell
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-extra
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , json-to-haskell
+    , mtl
+    , recursion-schemes
+    , text
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+test-suite json-to-haskell-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_json_to_haskell
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-extra
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , json-to-haskell
+    , mtl
+    , recursion-schemes
+    , text
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
