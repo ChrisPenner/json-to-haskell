@@ -31,8 +31,13 @@ dependencies:
 - mtl
 - bytestring
 
+ghc-options:
+- -Wall
+
 library:
   source-dirs: src
+  ghc-options:
+  - -Wincomplete-patterns
 
 executables:
   json-to-haskell-exe:
@@ -44,6 +49,9 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - json-to-haskell
+    - lens
+    - lens-aeson
+    - raw-strings-qq
 
 tests:
   json-to-haskell-test:
@@ -55,3 +63,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - json-to-haskell
+    - hspec

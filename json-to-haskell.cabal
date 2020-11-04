@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b6fe0a854b5c1f554a7592a733cc7c5ddeac63de0737216739d1d773dc56de60
+-- hash: 0ec89ccbeb531be81f661a0903e9df45de27677b81c094cc03ab68e1c33c5e51
 
 name:           json-to-haskell
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       Paths_json_to_haskell
   hs-source-dirs:
       src
+  ghc-options: -Wall -Wincomplete-patterns
   build-depends:
       aeson
     , aeson-extra
@@ -51,7 +52,7 @@ executable json-to-haskell-exe
       Paths_json_to_haskell
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , aeson-extra
@@ -59,7 +60,10 @@ executable json-to-haskell-exe
     , bytestring
     , containers
     , json-to-haskell
+    , lens
+    , lens-aeson
     , mtl
+    , raw-strings-qq
     , recursion-schemes
     , text
     , unordered-containers
@@ -73,13 +77,14 @@ test-suite json-to-haskell-test
       Paths_json_to_haskell
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , aeson-extra
     , base >=4.7 && <5
     , bytestring
     , containers
+    , hspec
     , json-to-haskell
     , mtl
     , recursion-schemes
