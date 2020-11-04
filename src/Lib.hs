@@ -40,12 +40,28 @@ data TextType =
   | UseByteString
   deriving (Show, Eq)
 
+data MapType =
+    UseMap
+  | UseHashMap
+  deriving (Show, Eq)
+
+data ListType =
+    UseList
+  | UseVector
+  deriving (Show, Eq)
+
+
+
+
 data Options = Options
   { _tabStop :: Int
   , _numberPreference :: NumberPreference
   , _textType :: TextType
+  , _mapType :: MapType
+  , _listType :: ListType
   , _includeImports :: Bool
   , _stronglyNormalize :: Bool
+  , _strictData :: Bool
   }
 
 
@@ -62,9 +78,26 @@ defaultOptions = Options
     { _tabStop = 2
     , _numberPreference = DoubleNumbers
     , _textType = UseText
+    , _mapType = UseMap
+    , _listType = UseList
     , _includeImports = False
     , _stronglyNormalize = True
+    , _strictData = False
     }
+
+performantOptions :: Options
+performantOptions = Options
+    { _tabStop = 2
+    , _numberPreference = DoubleNumbers
+    , _textType = UseText
+    , _mapType = UseMap
+    , _listType = UseList
+    , _includeImports = False
+    , _stronglyNormalize = True
+    -- TODO
+    , _strictData = True
+    }
+
 
 data NumberType = Fractional | Whole
   deriving (Show, Eq, Ord)
@@ -186,7 +219,8 @@ buildType :: Struct 'Ref -> Builder ()
 buildType =
   \case
     SNull -> tell "()"
-    SString -> tell "Text"
+    SString -> do
+        getTextType >>= tell
     SNumber t -> do
         pref <- view (options . numberPreference)
         case (pref, t) of
@@ -200,9 +234,17 @@ buildType =
 
     SBool -> tell "Bool"
     SValue -> tell "Value"
-    SMap s -> tell "Map Text " >> parens (buildType s)
+    SMap s -> do
+        txtType <- getTextType
+        tell ("Map " <> txtType <> " ") >> parens (buildType s)
     SArray s -> tell "Vector " >> parens (buildType s)
     SRecordRef n -> tell n
+  where
+    getTextType = do
+        view (options . textType) <&> \case
+          UseString -> "String"
+          UseByteString -> "ByteString"
+          UseText -> "Text"
     -- SOptional s -> tell "Maybe " >> parens (builder s)
 
 -- Normalize records to ensure only one name for each (structural) record as well no duplicate
