@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 36b548099e83be4bb322a676b0f7af2713cc18459aa04159116d9297909cb53f
+-- hash: a8efce442a08cf8de2c22bceef0e18575cb7244f03829948e3091318a34c9227
 
 name:           json-to-haskell
 version:        0.1.0.0
@@ -40,6 +40,7 @@ library
     , bytestring
     , casing
     , containers
+    , microlens-platform
     , mtl
     , recursion-schemes
     , text
@@ -62,8 +63,7 @@ executable json-to-haskell-exe
     , casing
     , containers
     , json-to-haskell
-    , lens
-    , lens-aeson
+    , microlens-platform
     , mtl
     , raw-strings-qq
     , recursion-schemes
@@ -89,6 +89,7 @@ test-suite json-to-haskell-test
     , containers
     , hspec
     , json-to-haskell
+    , microlens-platform
     , mtl
     , recursion-schemes
     , text

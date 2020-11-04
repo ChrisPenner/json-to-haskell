@@ -31,6 +31,7 @@ dependencies:
 - mtl
 - bytestring
 - casing
+- microlens-platform
 
 ghc-options:
 - -Wall
@@ -50,8 +51,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - json-to-haskell
-    - lens
-    - lens-aeson
     - raw-strings-qq
 
 tests:

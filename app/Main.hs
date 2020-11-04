@@ -4,14 +4,13 @@
 module Main where
 
 import Lib
-import Data.Aeson
-import Data.Aeson.Lens
-import Control.Lens
+import Data.Aeson hiding (defaultOptions)
 import Text.RawString.QQ (r)
 import Data.Text.IO as T
+import Data.Maybe
 
 value :: Value
-value = view (singular (_JSON @String)) ([r|
+value = fromJust $ decode ([r|
 {
   "name": "jon",
   "age and stuff": 37,
@@ -20,13 +19,17 @@ value = view (singular (_JSON @String)) ([r|
   "address": {
     "street": "221B",
     "zip": 12345
+  },
+  "other-address": {
+    "street": "221B",
+    "zip2": 12345
   }
 }
 |])
 
 main :: IO ()
 main = do
-    T.putStrLn $ json2Haskell value
+    T.putStrLn $ json2Haskell defaultOptions value
     -- putStrLn "Type"
     -- print a
     -- putStrLn ""

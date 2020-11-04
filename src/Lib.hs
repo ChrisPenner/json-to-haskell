@@ -7,9 +7,11 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 module Lib where
 
-import Data.Aeson
+import Data.Aeson hiding (Options)
 import Data.Aeson.Extra.Recursive
 import Data.Functor.Foldable hiding (fold)
 import qualified Data.Text as T
@@ -17,12 +19,55 @@ import qualified Data.Vector as V
 import qualified Data.HashMap.Strict as HM
 import Control.Monad.Reader
 import Control.Monad.Writer
+import Control.Monad.State
 import Data.Foldable
 import qualified Data.Set as S
 import Text.Casing
+import Lens.Micro.Platform
+import qualified Data.Map as M
 
-indentation :: Int
-indentation = 2
+data NumberPreference =
+    SmartFloats
+  | SmartDoubles
+  | FloatNumbers
+  | DoubleNumbers
+  | ScientificNumbers
+  deriving (Show, Eq)
+
+data TextType =
+    UseString
+  | UseText
+  | UseByteString
+  deriving (Show, Eq)
+
+data Options = Options
+  { _tabStop :: Int
+  , _numberPreference :: NumberPreference
+  , _textType :: TextType
+  , _includeImports :: Bool
+  , _stronglyNormalize :: Bool
+  }
+
+
+data Env = Env
+    { _options :: Options
+    , _indentationLevel  :: Int
+    }
+
+makeLenses ''Options
+makeLenses ''Env
+
+defaultOptions :: Options
+defaultOptions = Options
+    { _tabStop = 2
+    , _numberPreference = DoubleNumbers
+    , _textType = UseText
+    , _includeImports = False
+    , _stronglyNormalize = True
+    }
+
+data NumberType = Fractional | Whole
+  deriving (Show, Eq, Ord)
 
 type StructName = T.Text
 data RecordType = Ref | Structure
@@ -32,7 +77,7 @@ data Struct (r :: RecordType) where
         SRecordRef :: StructName -> Struct 'Ref
         SMap :: Struct r -> Struct r
         SBool :: Struct r
-        SNumber :: Struct r
+        SNumber :: NumberType -> Struct r
         SNull :: Struct r
         SString :: Struct r
         SValue :: Struct r
@@ -60,17 +105,19 @@ analyze = cata alg
           Just s -> SArray s
           Nothing -> SArray SValue
       StringF _ -> SString
-      NumberF _ -> SNumber
+      NumberF n ->
+          SNumber $ if (ceiling n == (floor n :: Int)) then Whole
+                                           else Fractional
       BoolF _ -> SBool
       NullF -> SNull
 
 type Normalizer a = Writer (HM.HashMap T.Text (S.Set (HM.HashMap T.Text (Struct 'Ref)))) a
 
-json2Haskell :: Value -> T.Text
-json2Haskell v = do
+json2Haskell :: Options -> Value -> T.Text
+json2Haskell opts v = do
     let struct = analyze v
         allStructs = execWriter $ normalize (nameRecord "model") struct
-     in buildAllStructs allStructs
+     in buildAllStructs opts allStructs
 
 nameRecord :: T.Text -> RecordRep 'Ref -> Normalizer T.Text
 nameRecord (toRecordName -> name) record = do
@@ -96,7 +143,7 @@ normalize register = \case
   SMap m -> do
       SMap <$> normalize register m
   SBool -> pure SBool
-  SNumber -> pure SNumber
+  SNumber t -> pure $ SNumber t
   SNull -> pure SNull
   SString -> pure SString
   SValue -> pure SValue
@@ -105,9 +152,9 @@ parens :: MonadWriter T.Text m => m a -> m a
 parens m =
     tell "(" *> m <* tell ")"
 
-line :: (MonadReader Int m, MonadWriter T.Text m) => m a -> m a
+line :: (MonadReader Env m, MonadWriter T.Text m) => m a -> m a
 line m = do
-    n <- ask
+    n <- view indentationLevel
     tell $ T.replicate n " "
     a <- m
     newline
@@ -116,10 +163,12 @@ line m = do
 newline :: MonadWriter T.Text m => m ()
 newline = tell "\n"
 
-indented :: (MonadReader Int m, MonadWriter T.Text m) => m a -> m a
-indented = local (+indentation)
+indented :: (MonadReader Env m, MonadWriter T.Text m) => m a -> m a
+indented m = do
+    n <- view (options . tabStop)
+    local (indentationLevel +~ n) m
 
-type Builder a = ReaderT Int (Writer T.Text) ()
+type Builder a = ReaderT Env (Writer T.Text) ()
 
 buildRecordDef :: StructName -> HM.HashMap T.Text (Struct 'Ref) -> Builder ()
 buildRecordDef name struct = do
@@ -138,23 +187,38 @@ buildType =
   \case
     SNull -> tell "()"
     SString -> tell "Text"
-    SNumber -> tell "Double"
+    SNumber t -> do
+        pref <- view (options . numberPreference)
+        case (pref, t) of
+            (FloatNumbers, _) -> tell "Float"
+            (DoubleNumbers, _) -> tell "Double"
+            (ScientificNumbers, _) -> tell "Scientific"
+            (SmartFloats, Fractional) -> tell "Float"
+            (SmartFloats, Whole) -> tell "Int"
+            (SmartDoubles, Fractional) -> tell "Double"
+            (SmartDoubles, Whole) -> tell "Int"
+
     SBool -> tell "Bool"
     SValue -> tell "Value"
     SMap s -> tell "Map Text " >> parens (buildType s)
     SArray s -> tell "Vector " >> parens (buildType s)
     SRecordRef n -> tell n
     -- SOptional s -> tell "Maybe " >> parens (builder s)
-    -- SRecord ss ->
-    --     for_ (HM.toList ss) $ \(k, s) -> do
-    --         line $ do
-    --             tell (k <> " :: ")
-    --             builder s
 
+-- Normalize records to ensure only one name for each (structural) record as well no duplicate
+-- names
+-- normalizeStructRefs :: HM.HashMap T.Text (S.Set (RecordRep 'Ref)) -> HM.HashMap T.Text (RecordRep 'Ref)
+-- normalizeStructRefs hm = _
+    -- let listOfAll = M.fromList . expand . HM.toList $ hm
+    --  in _
+    --   where
+    --     expand xs = flip evalStateT mempty $ do
+    --         (name, records) <- lift $ xs
+    --         record <- lift $ S.toList records
+    --         return [(name, record)]
 
-
-buildAllStructs :: HM.HashMap T.Text (S.Set (RecordRep 'Ref)) -> T.Text
-buildAllStructs hm = execWriter . flip runReaderT 0 $ do
+buildAllStructs :: Options -> HM.HashMap T.Text (S.Set (RecordRep 'Ref)) -> T.Text
+buildAllStructs opts hm = execWriter . flip runReaderT (Env opts 0) $ do
     flip HM.traverseWithKey hm $ \k v -> do
         buildRecordDef k (head . S.toList $ v)
         newline
