@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0ec89ccbeb531be81f661a0903e9df45de27677b81c094cc03ab68e1c33c5e51
+-- hash: 36b548099e83be4bb322a676b0f7af2713cc18459aa04159116d9297909cb53f
 
 name:           json-to-haskell
 version:        0.1.0.0
@@ -38,6 +38,7 @@ library
     , aeson-extra
     , base >=4.7 && <5
     , bytestring
+    , casing
     , containers
     , mtl
     , recursion-schemes
@@ -58,6 +59,7 @@ executable json-to-haskell-exe
     , aeson-extra
     , base >=4.7 && <5
     , bytestring
+    , casing
     , containers
     , json-to-haskell
     , lens
@@ -83,6 +85,7 @@ test-suite json-to-haskell-test
     , aeson-extra
     , base >=4.7 && <5
     , bytestring
+    , casing
     , containers
     , hspec
     , json-to-haskell

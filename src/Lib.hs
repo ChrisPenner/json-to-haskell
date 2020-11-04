@@ -6,6 +6,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE ViewPatterns #-}
 module Lib where
 
 import Data.Aeson
@@ -18,13 +19,17 @@ import Control.Monad.Reader
 import Control.Monad.Writer
 import Data.Foldable
 import qualified Data.Set as S
+import Text.Casing
+
+indentation :: Int
+indentation = 2
 
 type StructName = T.Text
 data RecordType = Ref | Structure
 data Struct (r :: RecordType) where
         SArray :: Struct r -> Struct r
-        SRecord :: (HM.HashMap T.Text (Struct r)) -> Struct r
-        SRecordRef :: StructName -> Struct r
+        SRecord :: (HM.HashMap T.Text (Struct 'Structure)) -> Struct 'Structure
+        SRecordRef :: StructName -> Struct 'Ref
         SMap :: Struct r -> Struct r
         SBool :: Struct r
         SNumber :: Struct r
@@ -64,13 +69,21 @@ type Normalizer a = Writer (HM.HashMap T.Text (S.Set (HM.HashMap T.Text (Struct 
 json2Haskell :: Value -> T.Text
 json2Haskell v = do
     let struct = analyze v
-        allStructs = execWriter $ normalize (nameRecord "root") struct
+        allStructs = execWriter $ normalize (nameRecord "model") struct
      in buildAllStructs allStructs
 
 nameRecord :: T.Text -> RecordRep 'Ref -> Normalizer T.Text
-nameRecord name record = do
+nameRecord (toRecordName -> name) record = do
     tell . (HM.singleton name) . S.singleton $ record
     return name
+
+
+toRecordName :: T.Text -> T.Text
+toRecordName = T.pack . toPascal . fromAny . T.unpack
+
+toFieldName :: T.Text -> T.Text
+toFieldName = T.pack . toCamel . fromAny . T.unpack
+
 
 normalize :: (RecordRep 'Ref -> Normalizer T.Text) -> Struct 'Structure -> Normalizer (Struct 'Ref)
 normalize register = \case
@@ -79,7 +92,6 @@ normalize register = \case
           normalize (nameRecord k) v
       name <- register $ m'
       return $ SRecordRef name
-  SRecordRef n -> pure (SRecordRef n)
   SArray s -> SArray <$> normalize register s
   SMap m -> do
       SMap <$> normalize register m
@@ -98,22 +110,28 @@ line m = do
     n <- ask
     tell $ T.replicate n " "
     a <- m
-    tell "\n"
+    newline
     return  a
+
+newline :: MonadWriter T.Text m => m ()
+newline = tell "\n"
+
+indented :: (MonadReader Int m, MonadWriter T.Text m) => m a -> m a
+indented = local (+indentation)
 
 type Builder a = ReaderT Int (Writer T.Text) ()
 
 buildRecordDef :: StructName -> HM.HashMap T.Text (Struct 'Ref) -> Builder ()
 buildRecordDef name struct = do
     line . tell . fold $ ["data ", name, " = ", name]
-    for_ (zip [0 :: Int ..] $ HM.toList struct) $ \(i, (k, v)) -> do
+    indented $ for_ (zip [0 :: Int ..] $ HM.toList struct) $ \(i, (k, v)) -> do
         line $ do
             if (i == 0) then tell "{ "
                         else tell ", "
-            tell k
+            tell $ toFieldName k
             tell " :: "
             buildType v
-    tell " }"
+    indented . line $ tell "}"
 
 buildType :: Struct 'Ref -> Builder ()
 buildType =
@@ -126,9 +144,7 @@ buildType =
     SMap s -> tell "Map Text " >> parens (buildType s)
     SArray s -> tell "Vector " >> parens (buildType s)
     SRecordRef n -> tell n
-    SRecord _ -> error "Record missed in normalization"
     -- SOptional s -> tell "Maybe " >> parens (builder s)
-    -- SRecordRef n -> tell
     -- SRecord ss ->
     --     for_ (HM.toList ss) $ \(k, s) -> do
     --         line $ do
@@ -141,4 +157,4 @@ buildAllStructs :: HM.HashMap T.Text (S.Set (RecordRep 'Ref)) -> T.Text
 buildAllStructs hm = execWriter . flip runReaderT 0 $ do
     flip HM.traverseWithKey hm $ \k v -> do
         buildRecordDef k (head . S.toList $ v)
-        line $ pure ()
+        newline
