@@ -21,10 +21,14 @@ import Control.Monad.Reader
 import Control.Monad.Writer
 import Control.Monad.State
 import Data.Foldable
-import qualified Data.Set as S
 import Text.Casing
 import Lens.Micro.Platform
 import qualified Data.Map as M
+import Data.Maybe
+import qualified Data.List.NonEmpty as NE
+import Data.Set.NonEmpty as NES
+import qualified Data.List as L
+import qualified Data.Bimap as BM
 
 data NumberPreference =
     SmartFloats
@@ -144,19 +148,52 @@ analyze = cata alg
       BoolF _ -> SBool
       NullF -> SNull
 
-type Normalizer a = Writer (HM.HashMap T.Text (S.Set (HM.HashMap T.Text (Struct 'Ref)))) a
+type Normalizer a = State (M.Map (HM.HashMap T.Text (Struct 'Structure)) (NES.NESet T.Text)) a
 
 json2Haskell :: Options -> Value -> T.Text
 json2Haskell opts v = do
     let struct = analyze v
-        allStructs = execWriter $ normalize (nameRecord "model") struct
-     in buildAllStructs opts allStructs
+        allStructs = flip execState mempty $ normalize (nameRecord "model") struct
+        namedStructs = nameAllRecords allStructs
+        referencedStructs = BM.mapR (fmap (dereference namedStructs)) namedStructs
+     in buildAllStructs opts referencedStructs
 
-nameRecord :: T.Text -> RecordRep 'Ref -> Normalizer T.Text
+nameAllRecords :: M.Map (RecordRep 'Structure) (NES.NESet T.Text) -> BM.Bimap T.Text (RecordRep 'Structure)
+nameAllRecords m =
+    flip execState BM.empty $ do
+        for_ (L.sortOn (NES.size . snd) . M.toList $ m) $ \(struct, names) -> do
+            existingNames <- get
+            let bestName = chooseBestName (NES.toList names) existingNames
+            modify (BM.insert bestName struct)
+
+dereference :: BM.Bimap T.Text (RecordRep 'Structure) -> Struct 'Structure -> Struct 'Ref
+dereference m =
+  \case
+    SNull -> SNull
+    SString -> SString
+    SNumber t -> SNumber t
+    SBool -> SBool
+    SValue -> SValue
+    SMap s -> SMap (dereference m s)
+    SArray s -> SArray (dereference m s)
+    SRecord s -> SRecordRef . fromJust $ BM.lookupR s m
+
+chooseBestName :: Ord a => NE.NonEmpty T.Text -> BM.Bimap T.Text a -> T.Text
+chooseBestName (x NE.:| y : ys) m =
+    case BM.lookup x m of
+        Nothing -> x
+        Just _ -> chooseBestName (y NE.:| ys) m
+chooseBestName (x NE.:| []) m =
+    head . catMaybes . fmap (go . (x <>)) $ ("" : fmap (T.pack . show) [(1 :: Int)..])
+  where
+    go k = case BM.lookup k m of
+        Nothing -> Just k
+        Just _ -> Nothing
+
+
+nameRecord :: T.Text -> RecordRep 'Structure -> Normalizer ()
 nameRecord (toRecordName -> name) record = do
-    tell . (HM.singleton name) . S.singleton $ record
-    return name
-
+    modify $ \m -> M.alter (Just . maybe (NES.singleton name) (NES.insert name)) record m
 
 toRecordName :: T.Text -> T.Text
 toRecordName = T.pack . toPascal . fromAny . T.unpack
@@ -165,13 +202,13 @@ toFieldName :: T.Text -> T.Text
 toFieldName = T.pack . toCamel . fromAny . T.unpack
 
 
-normalize :: (RecordRep 'Ref -> Normalizer T.Text) -> Struct 'Structure -> Normalizer (Struct 'Ref)
+normalize :: (RecordRep 'Structure -> Normalizer ()) -> Struct 'Structure -> Normalizer (Struct 'Structure)
 normalize register = \case
   SRecord m -> do
       m' <- flip HM.traverseWithKey m $ \k v -> do
           normalize (nameRecord k) v
-      name <- register $ m'
-      return $ SRecordRef name
+      register $ m'
+      return $ SRecord m'
   SArray s -> SArray <$> normalize register s
   SMap m -> do
       SMap <$> normalize register m
@@ -259,8 +296,8 @@ buildType =
     --         record <- lift $ S.toList records
     --         return [(name, record)]
 
-buildAllStructs :: Options -> HM.HashMap T.Text (S.Set (RecordRep 'Ref)) -> T.Text
-buildAllStructs opts hm = execWriter . flip runReaderT (Env opts 0) $ do
-    flip HM.traverseWithKey hm $ \k v -> do
-        buildRecordDef k (head . S.toList $ v)
+buildAllStructs :: Options -> BM.Bimap T.Text (RecordRep 'Ref) -> T.Text
+buildAllStructs opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
+    flip M.traverseWithKey m $ \k v -> do
+        buildRecordDef k v
         newline

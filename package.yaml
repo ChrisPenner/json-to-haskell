@@ -32,6 +32,8 @@ dependencies:
 - bytestring
 - casing
 - microlens-platform
+- nonempty-containers
+- bimap
 
 ghc-options:
 - -Wall
