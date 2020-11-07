@@ -16,9 +16,15 @@ import qualified Data.Bimap as BM
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map as M
 import qualified Data.Text as T
+import Text.Casing (toCamel, fromAny)
+import Data.Char (isAlpha, isAlphaNum)
 import Lens.Micro.Platform (view, (+~), (<&>))
 
 
+toFieldName :: T.Text -> T.Text
+toFieldName = T.filter (isAlphaNum) . T.pack . toCamel . fromAny . T.unpack . T.dropWhile (not . isAlpha)
+
+type StructName = T.Text
 parens :: MonadWriter T.Text m => m a -> m a
 parens m =
     tell "(" *> m <* tell ")"
