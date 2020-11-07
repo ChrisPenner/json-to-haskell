@@ -25,6 +25,8 @@ import Text.Casing
 import Lens.Micro.Platform
 import qualified Data.Map as M
 import Data.Maybe
+import Data.Either
+import Data.Char
 import qualified Data.List.NonEmpty as NE
 import Data.Set.NonEmpty as NES
 import qualified Data.List as L
@@ -150,13 +152,13 @@ analyze = cata alg
 
 type Normalizer a = State (M.Map (HM.HashMap T.Text (Struct 'Structure)) (NES.NESet T.Text)) a
 
-json2Haskell :: Options -> Value -> Either String T.Text
+json2Haskell :: Options -> Value -> T.Text
 json2Haskell opts v = do
     let struct = analyze v
         allStructs = flip execState mempty $ normalize (nameRecord "model") struct
         namedStructs = nameAllRecords allStructs
-    referencedStructs <- (traverse . traverse . traverse) (dereference namedStructs) $ BM.toList namedStructs
-    pure $ buildAllStructs opts (BM.fromList referencedStructs)
+        referencedStructs = BM.mapR (fmap (dereference namedStructs)) namedStructs
+     in buildAllStructs opts referencedStructs
 
 nameAllRecords :: M.Map (RecordRep 'Structure) (NES.NESet T.Text) -> BM.Bimap T.Text (RecordRep 'Structure)
 nameAllRecords m =
@@ -166,21 +168,17 @@ nameAllRecords m =
             let bestName = chooseBestName (NES.toList names) existingNames
             modify (BM.insert bestName struct)
 
-dereference :: BM.Bimap T.Text (RecordRep 'Structure) -> Struct 'Structure -> Either String (Struct 'Ref)
+dereference :: BM.Bimap T.Text (RecordRep 'Structure) -> Struct 'Structure -> Struct 'Ref
 dereference m =
   \case
-    SNull -> pure $ SNull
-    SString -> pure $ SString
-    SNumber t -> pure $ SNumber t
-    SBool -> pure $ SBool
-    SValue -> pure $ SValue
-    SMap s -> SMap <$> dereference m s
-    SArray s -> SArray <$> dereference m s
-    SRecord s -> note "" . fmap SRecordRef $ BM.lookupR s m
-
-
-note :: String -> Maybe a -> Either String a
-note e = maybe (Left e) Right
+    SNull -> SNull
+    SString -> SString
+    SNumber t -> SNumber t
+    SBool -> SBool
+    SValue -> SValue
+    SMap s -> SMap (dereference m s)
+    SArray s -> SArray (dereference m s)
+    SRecord s -> SRecordRef . fromRight (error "Expected record name but wasn't found") $ BM.lookupR s m
 
 chooseBestName :: Ord a => NE.NonEmpty T.Text -> BM.Bimap T.Text a -> T.Text
 chooseBestName (x NE.:| y : ys) m =
@@ -188,7 +186,7 @@ chooseBestName (x NE.:| y : ys) m =
         Nothing -> x
         Just _ -> chooseBestName (y NE.:| ys) m
 chooseBestName (x NE.:| []) m =
-    head . catMaybes . fmap (go . (x <>)) $ ("" : fmap (T.pack . show) [(2 :: Int)..])
+    head . catMaybes . fmap (go . (x <>)) $ ("" : fmap (T.pack . show) [(1 :: Int)..])
   where
     go k = case BM.lookup k m of
         Nothing -> Just k
@@ -200,10 +198,10 @@ nameRecord (toRecordName -> name) record = do
     modify $ \m -> M.alter (Just . maybe (NES.singleton name) (NES.insert name)) record m
 
 toRecordName :: T.Text -> T.Text
-toRecordName = T.pack . toPascal . fromAny . T.unpack
+toRecordName = T.filter (isAlphaNum) . T.pack . toPascal . fromAny . T.unpack . T.dropWhile (not . isAlpha)
 
 toFieldName :: T.Text -> T.Text
-toFieldName = T.pack . toCamel . fromAny . T.unpack
+toFieldName = T.filter (isAlphaNum) . T.pack . toCamel . fromAny . T.unpack . T.dropWhile (not . isAlpha)
 
 
 normalize :: (RecordRep 'Structure -> Normalizer ()) -> Struct 'Structure -> Normalizer (Struct 'Structure)
@@ -247,14 +245,58 @@ type Builder a = ReaderT Env (Writer T.Text) ()
 buildRecordDef :: StructName -> HM.HashMap T.Text (Struct 'Ref) -> Builder ()
 buildRecordDef name struct = do
     line . tell . fold $ ["data ", name, " = ", name]
-    indented $ for_ (zip [0 :: Int ..] $ HM.toList struct) $ \(i, (k, v)) -> do
+
+    indented $ do
+      when (HM.null struct) . line $ tell "{"
+      for_ (zip [0 :: Int ..] $ HM.toList struct) $ \(i, (k, v)) -> do
         line $ do
             if (i == 0) then tell "{ "
                         else tell ", "
             tell $ toFieldName k
             tell " :: "
             buildType v
-    indented . line $ tell "}"
+    indented . line $ do
+        tell "} "
+        tell "deriving (Show, Eq, Ord)"
+
+buildToJSONInstance :: StructName -> HM.HashMap T.Text (Struct 'Ref) -> Builder ()
+buildToJSONInstance name struct = do
+    line $ tell $ "instance ToJSON " <> name <> " where"
+    indented $ do
+        line $ do
+            tell $ "toJSON " <> name
+            when (not . HM.null $ struct) $ tell "{..}"
+            tell " = object"
+        indented $ do
+            when (HM.null struct) . line $ tell "["
+            for_ (zip [0 :: Int ..] $ HM.keys struct) $ \(i, k) -> do
+                line $ do
+                    if (i == 0) then tell "[ "
+                                else tell ", "
+                    tell $ "\"" <> escapeQuotes k <> "\""
+                    tell " .= "
+                    tell $ toFieldName k
+            line . tell $ "] "
+
+buildFromJSONInstance :: StructName -> HM.HashMap T.Text (Struct 'Ref) -> Builder ()
+buildFromJSONInstance name struct = do
+    line $ tell $ "instance FromJSON " <> name <> " where"
+    indented $ do
+        line $ tell $ "parseJSON (Object v) = do"
+        indented $ do
+            for_ (HM.keys struct) $ \k -> do
+                line $ do
+                    tell $ toFieldName k
+                    tell " <- v .: "
+                    tell $ "\"" <> escapeQuotes k <> "\""
+            line $ do
+                tell $ "pure $ " <> name
+                when (not . HM.null $ struct) $ tell "{..}"
+        line $ tell $ "parseJSON invalid = do"
+        indented $ do
+          line . tell $ "prependFailure \"parsing " <> name <> " failed, \""
+          indented . line . tell $ "(typeMismatch \"Object\" invalid)"
+
 
 buildType :: Struct 'Ref -> Builder ()
 buildType =
@@ -302,6 +344,28 @@ buildType =
 
 buildAllStructs :: Options -> BM.Bimap T.Text (RecordRep 'Ref) -> T.Text
 buildAllStructs opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
+    tell . T.unlines $
+        [ "{-# LANGUAGE DuplicateRecordFields #-}"
+        , "{-# LANGUAGE RecordWildCards #-}"
+        , "{-# LANGUAGE OverloadedStrings #-}"
+        , "module Model where"
+        , ""
+        , "import Prelude (Double, Bool, Show, Eq, Ord)"
+        , "import Data.Aeson (ToJSON)"
+        , "import Data.Text (Text)"
+        , "import Data.Vector (Vector)"
+        ]
+    newline
     flip M.traverseWithKey m $ \k v -> do
         buildRecordDef k v
         newline
+    flip M.traverseWithKey m $ \k v -> do
+        buildToJSONInstance k v
+        newline
+    flip M.traverseWithKey m $ \k v -> do
+        buildFromJSONInstance k v
+        newline
+
+
+escapeQuotes :: T.Text -> T.Text
+escapeQuotes = T.replace "\"" "\\\""

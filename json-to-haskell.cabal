@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d8910e5dd37ee10db7cfe79c9bfa976f1bb67284b93eed7cf203f1e8c605b057
+-- hash: 135f22ba221b2ed4f8af0f29eca903bdb6af10a7baf28da58f27cd1e2ec7e244
 
 name:           json-to-haskell
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Test
   other-modules:
       Paths_json_to_haskell
   hs-source-dirs:

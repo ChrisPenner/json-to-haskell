@@ -15,8 +15,8 @@ value = eitherDecode ([r|
 {
   "name": "jon",
   "age and stuff": 37,
-  "employed": true,
-  "pets": [["Garfield"], ["Odie"]],
+  "is-employed": true,
+  "\"pets_maybe": [["Garfield"], ["Odie"]],
   "address": {
     "street": "221B",
     "zip": 12345,
@@ -28,7 +28,7 @@ value = eitherDecode ([r|
     "street": "221B",
     "zip2": 12345,
     "other" : {
-      "two": 1
+      "two": [{}]
     }
   }
 }
@@ -37,7 +37,7 @@ value = eitherDecode ([r|
 main :: IO ()
 main = do
     v <- either fail pure value
-    T.putStrLn $ either T.pack id $ json2Haskell defaultOptions v
+    T.putStrLn $ json2Haskell defaultOptions v
     -- putStrLn "Type"
     -- print a
     -- putStrLn ""
