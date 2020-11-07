@@ -3,13 +3,17 @@
 {-# LANGUAGE TypeApplications #-}
 module Main where
 
-import Lib
+import JsonToHaskell
 import Data.Aeson hiding (defaultOptions)
 import Text.RawString.QQ (r)
 import Data.Text.IO as T
+import Data.ByteString.Lazy as BS
 
 value :: Either String Value
-value = eitherDecode ([r|
+value = eitherDecode valueStr
+
+valueStr :: BS.ByteString
+valueStr = [r|
 {
   "name": "jon",
   "age and stuff": 37,
@@ -30,15 +34,9 @@ value = eitherDecode ([r|
     }
   }
 }
-|])
+|]
 
 main :: IO ()
 main = do
     v <- either fail pure value
     T.putStrLn $ json2Haskell defaultOptions v
-    -- putStrLn "Type"
-    -- print a
-    -- putStrLn ""
-    -- putStrLn "SavedRecords"
-    -- print b
-

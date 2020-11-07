@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e053adad71ecec8bce550314e66eea9ce8febba4bed55931d2649776b8e405de
+-- hash: 0a966560be78a0a2c37da436b51cb78bd3cce5d7e8b629d4372b13ad6276280f
 
 name:           json-to-haskell
 version:        0.1.0.0
@@ -27,7 +27,10 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      JsonToHaskell
+      JsonToHaskell.Internal.Options
+      JsonToHaskell.Internal.Parser
+      JsonToHaskell.Internal.Printer
   other-modules:
       Paths_json_to_haskell
   hs-source-dirs:
@@ -52,6 +55,7 @@ library
 executable json-to-haskell-exe
   main-is: Main.hs
   other-modules:
+      Model
       Paths_json_to_haskell
   hs-source-dirs:
       app
@@ -61,6 +65,7 @@ executable json-to-haskell-exe
     , aeson-extra
     , base >=4.7 && <5
     , bimap
+    , bytestring
     , casing
     , containers
     , json-to-haskell
