@@ -150,13 +150,13 @@ analyze = cata alg
 
 type Normalizer a = State (M.Map (HM.HashMap T.Text (Struct 'Structure)) (NES.NESet T.Text)) a
 
-json2Haskell :: Options -> Value -> T.Text
+json2Haskell :: Options -> Value -> Either String T.Text
 json2Haskell opts v = do
     let struct = analyze v
         allStructs = flip execState mempty $ normalize (nameRecord "model") struct
         namedStructs = nameAllRecords allStructs
-        referencedStructs = BM.mapR (fmap (dereference namedStructs)) namedStructs
-     in buildAllStructs opts referencedStructs
+    referencedStructs <- (traverse . traverse . traverse) (dereference namedStructs) $ BM.toList namedStructs
+    pure $ buildAllStructs opts (BM.fromList referencedStructs)
 
 nameAllRecords :: M.Map (RecordRep 'Structure) (NES.NESet T.Text) -> BM.Bimap T.Text (RecordRep 'Structure)
 nameAllRecords m =
@@ -166,17 +166,21 @@ nameAllRecords m =
             let bestName = chooseBestName (NES.toList names) existingNames
             modify (BM.insert bestName struct)
 
-dereference :: BM.Bimap T.Text (RecordRep 'Structure) -> Struct 'Structure -> Struct 'Ref
+dereference :: BM.Bimap T.Text (RecordRep 'Structure) -> Struct 'Structure -> Either String (Struct 'Ref)
 dereference m =
   \case
-    SNull -> SNull
-    SString -> SString
-    SNumber t -> SNumber t
-    SBool -> SBool
-    SValue -> SValue
-    SMap s -> SMap (dereference m s)
-    SArray s -> SArray (dereference m s)
-    SRecord s -> SRecordRef . fromJust $ BM.lookupR s m
+    SNull -> pure $ SNull
+    SString -> pure $ SString
+    SNumber t -> pure $ SNumber t
+    SBool -> pure $ SBool
+    SValue -> pure $ SValue
+    SMap s -> SMap <$> dereference m s
+    SArray s -> SArray <$> dereference m s
+    SRecord s -> note "" . fmap SRecordRef $ BM.lookupR s m
+
+
+note :: String -> Maybe a -> Either String a
+note e = maybe (Left e) Right
 
 chooseBestName :: Ord a => NE.NonEmpty T.Text -> BM.Bimap T.Text a -> T.Text
 chooseBestName (x NE.:| y : ys) m =
@@ -184,7 +188,7 @@ chooseBestName (x NE.:| y : ys) m =
         Nothing -> x
         Just _ -> chooseBestName (y NE.:| ys) m
 chooseBestName (x NE.:| []) m =
-    head . catMaybes . fmap (go . (x <>)) $ ("" : fmap (T.pack . show) [(1 :: Int)..])
+    head . catMaybes . fmap (go . (x <>)) $ ("" : fmap (T.pack . show) [(2 :: Int)..])
   where
     go k = case BM.lookup k m of
         Nothing -> Just k

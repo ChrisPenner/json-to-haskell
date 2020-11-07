@@ -7,10 +7,11 @@ import Lib
 import Data.Aeson hiding (defaultOptions)
 import Text.RawString.QQ (r)
 import Data.Text.IO as T
+import qualified Data.Text as T
 import Data.Maybe
 
-value :: Value
-value = fromJust $ decode ([r|
+value :: Either String Value
+value = eitherDecode ([r|
 {
   "name": "jon",
   "age and stuff": 37,
@@ -18,18 +19,25 @@ value = fromJust $ decode ([r|
   "pets": [["Garfield"], ["Odie"]],
   "address": {
     "street": "221B",
-    "zip": 12345
+    "zip": 12345,
+    "other" : {
+      "one": 1
+    }
   },
   "other-address": {
     "street": "221B",
-    "zip2": 12345
+    "zip2": 12345,
+    "other" : {
+      "two": 1
+    }
   }
 }
 |])
 
 main :: IO ()
 main = do
-    T.putStrLn $ json2Haskell defaultOptions value
+    v <- either fail pure value
+    T.putStrLn $ either T.pack id $ json2Haskell defaultOptions v
     -- putStrLn "Type"
     -- print a
     -- putStrLn ""
