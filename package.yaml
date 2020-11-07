@@ -26,14 +26,13 @@ dependencies:
 - aeson-extra
 - containers
 - unordered-containers
-- vector
 - text
 - mtl
-- bytestring
 - casing
-- microlens-platform
 - nonempty-containers
 - bimap
+- microlens-platform
+- vector
 
 ghc-options:
 - -Wall

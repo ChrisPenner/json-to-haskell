@@ -11,26 +11,26 @@
 {-# LANGUAGE TypeApplications #-}
 module Lib where
 
-import Data.Aeson hiding (Options)
-import Data.Aeson.Extra.Recursive
-import Data.Functor.Foldable hiding (fold)
+import Control.Monad.Reader
+import Control.Monad.State
+import Control.Monad.Writer
+import Data.Aeson (Value)
+import Data.Aeson.Extra.Recursive (ValueF(..))
+import Data.Char (isAlpha, isAlphaNum)
+import Data.Foldable (for_, fold)
+import Data.Functor.Foldable (cata)
+import Data.Maybe (catMaybes)
+import Data.Either (fromRight)
+import Lens.Micro.Platform (makeLenses, (<&>), (+~), view)
+import Text.Casing (toPascal, toCamel, fromAny)
+import qualified Data.Bimap as BM
+import qualified Data.HashMap.Strict as HM
+import qualified Data.List as L
+import qualified Data.List.NonEmpty as NE
+import qualified Data.Map as M
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Vector as V
-import qualified Data.HashMap.Strict as HM
-import Control.Monad.Reader
-import Control.Monad.Writer
-import Control.Monad.State
-import Data.Foldable
-import Text.Casing
-import Lens.Micro.Platform
-import qualified Data.Map as M
-import Data.Maybe
-import Data.Either
-import Data.Char
-import qualified Data.List.NonEmpty as NE
-import Data.Set.NonEmpty as NES
-import qualified Data.List as L
-import qualified Data.Bimap as BM
 
 data NumberPreference =
     SmartFloats
@@ -55,9 +55,6 @@ data ListType =
     UseList
   | UseVector
   deriving (Show, Eq)
-
-
-
 
 data Options = Options
   { _tabStop :: Int
@@ -120,9 +117,6 @@ data Struct (r :: RecordType) where
         SNull :: Struct r
         SString :: Struct r
         SValue :: Struct r
-    -- It's possible it's a sum of multiple possible types
-    --  | SSum [Struct]
-        -- SOptional ::  Struct
 deriving instance Show (Struct r)
 deriving instance Eq (Struct r)
 deriving instance Ord (Struct r)
@@ -328,19 +322,6 @@ buildType =
           UseString -> "String"
           UseByteString -> "ByteString"
           UseText -> "Text"
-    -- SOptional s -> tell "Maybe " >> parens (builder s)
-
--- Normalize records to ensure only one name for each (structural) record as well no duplicate
--- names
--- normalizeStructRefs :: HM.HashMap T.Text (S.Set (RecordRep 'Ref)) -> HM.HashMap T.Text (RecordRep 'Ref)
--- normalizeStructRefs hm = _
-    -- let listOfAll = M.fromList . expand . HM.toList $ hm
-    --  in _
-    --   where
-    --     expand xs = flip evalStateT mempty $ do
-    --         (name, records) <- lift $ xs
-    --         record <- lift $ S.toList records
-    --         return [(name, record)]
 
 buildAllStructs :: Options -> BM.Bimap T.Text (RecordRep 'Ref) -> T.Text
 buildAllStructs opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
@@ -356,16 +337,15 @@ buildAllStructs opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0)
         , "import Data.Vector (Vector)"
         ]
     newline
-    flip M.traverseWithKey m $ \k v -> do
+    void . flip M.traverseWithKey m $ \k v -> do
         buildRecordDef k v
         newline
-    flip M.traverseWithKey m $ \k v -> do
+    void . flip M.traverseWithKey m $ \k v -> do
         buildToJSONInstance k v
         newline
-    flip M.traverseWithKey m $ \k v -> do
+    void . flip M.traverseWithKey m $ \k v -> do
         buildFromJSONInstance k v
         newline
-
 
 escapeQuotes :: T.Text -> T.Text
 escapeQuotes = T.replace "\"" "\\\""

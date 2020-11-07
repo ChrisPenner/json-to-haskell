@@ -7,8 +7,6 @@ import Lib
 import Data.Aeson hiding (defaultOptions)
 import Text.RawString.QQ (r)
 import Data.Text.IO as T
-import qualified Data.Text as T
-import Data.Maybe
 
 value :: Either String Value
 value = eitherDecode ([r|
