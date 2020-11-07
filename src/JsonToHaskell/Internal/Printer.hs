@@ -21,14 +21,18 @@ import Data.Char (isAlpha, isAlphaNum)
 import Lens.Micro.Platform (view, (+~), (<&>))
 
 
+-- | Convert a name into a valid haskell field name
 toFieldName :: T.Text -> T.Text
 toFieldName = T.filter (isAlphaNum) . T.pack . toCamel . fromAny . T.unpack . T.dropWhile (not . isAlpha)
 
 type StructName = T.Text
+
+-- | Wrap a writer in parens
 parens :: MonadWriter T.Text m => m a -> m a
 parens m =
     tell "(" *> m <* tell ")"
 
+-- | Embed the given writer at the correct level of indentation and add a newline
 line :: (MonadReader Env m, MonadWriter T.Text m) => m a -> m a
 line m = do
     n <- view indentationLevel
@@ -37,9 +41,11 @@ line m = do
     newline
     return  a
 
+-- | Add a newline
 newline :: MonadWriter T.Text m => m ()
 newline = tell "\n"
 
+-- | Indent all 'line's of the given writer by one tabstop
 indented :: (MonadReader Env m, MonadWriter T.Text m) => m a -> m a
 indented m = do
     n <- view (options . tabStop)
@@ -47,8 +53,9 @@ indented m = do
 
 type Builder a = ReaderT Env (Writer T.Text) ()
 
-buildRecordDef :: StructName -> RecordFields 'Ref -> Builder ()
-buildRecordDef name struct = do
+-- | Write out the Haskell code for a record data type
+writeRecord :: StructName -> RecordFields 'Ref -> Builder ()
+writeRecord name struct = do
     line . tell . fold $ ["data ", name, " = ", name]
 
     indented $ do
@@ -64,8 +71,9 @@ buildRecordDef name struct = do
         tell "} "
         tell "deriving (Show, Eq, Ord)"
 
-buildToJSONInstance :: StructName -> RecordFields 'Ref -> Builder ()
-buildToJSONInstance name struct = do
+-- | Write out the Haskell code for a ToJSON instance for the given record
+writeToJSONInstance :: StructName -> RecordFields 'Ref -> Builder ()
+writeToJSONInstance name struct = do
     line $ tell $ "instance ToJSON " <> name <> " where"
     indented $ do
         line $ do
@@ -83,8 +91,9 @@ buildToJSONInstance name struct = do
                     tell $ toFieldName k
             line . tell $ "] "
 
-buildFromJSONInstance :: StructName -> RecordFields 'Ref -> Builder ()
-buildFromJSONInstance name struct = do
+-- | Write out the Haskell code for a FromJSON instance for the given record
+writeFromJSONInstance :: StructName -> RecordFields 'Ref -> Builder ()
+writeFromJSONInstance name struct = do
     line $ tell $ "instance FromJSON " <> name <> " where"
     indented $ do
         line $ tell $ "parseJSON (Object v) = do"
@@ -103,6 +112,7 @@ buildFromJSONInstance name struct = do
           indented . line . tell $ "(typeMismatch \"Object\" invalid)"
 
 
+-- | Write out the Haskell representation for a given JSON type
 buildType :: Struct 'Ref -> Builder ()
 buildType =
   \case
@@ -134,8 +144,9 @@ buildType =
           UseByteString -> "ByteString"
           UseText -> "Text"
 
-buildAllStructs :: Options -> BM.Bimap T.Text (RecordFields 'Ref) -> T.Text
-buildAllStructs opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
+-- | Write out all the given records and their instances
+writeModel :: Options -> BM.Bimap T.Text (RecordFields 'Ref) -> T.Text
+writeModel opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
     tell . T.unlines $
         [ "{-# LANGUAGE DuplicateRecordFields #-}"
         , "{-# LANGUAGE RecordWildCards #-}"
@@ -151,13 +162,13 @@ buildAllStructs opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0)
 
     newline
     void . flip M.traverseWithKey m $ \k v -> do
-        buildRecordDef k v
+        writeRecord k v
         newline
     void . flip M.traverseWithKey m $ \k v -> do
-        buildToJSONInstance k v
+        writeToJSONInstance k v
         newline
     void . flip M.traverseWithKey m $ \k v -> do
-        buildFromJSONInstance k v
+        writeFromJSONInstance k v
         newline
 
 escapeQuotes :: T.Text -> T.Text
