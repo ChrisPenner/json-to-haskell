@@ -155,7 +155,7 @@ writeType nested struct = do
         wrapOuter $ tell (mapStr <> " " <> txtType <> " ") >> writeType True s
     SArray s -> do
         view (options . listType) >>= \case
-          UseList -> tell "[" >> writeType True s >> tell "]"
+          UseList -> tell "[" >> writeType False s >> tell "]"
           UseVector -> wrapOuter $ tell "Vector " >> writeType True s
     SRecordRef n -> tell n
   where
