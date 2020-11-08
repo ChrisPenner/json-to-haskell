@@ -107,6 +107,9 @@ optionParser = do
     _includeInstances <- flag True False
                 (long "no-instances"
                  <> stringDoc [r|Omit the ToJSON and FromJSON instances.|])
+    _prefixRecordFields <- flag True False
+                (long "no-prefix-record-fields"
+                 <> stringDoc [r|Omit record field prefixes.|])
     _strictData <- flag False True
                 (long "strict"
                  <> stringDoc [r|Use strict record fields.|])

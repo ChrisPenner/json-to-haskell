@@ -14,7 +14,7 @@ data NumberType =
     -- | Use 'Double' for all numbers
   | UseDoubles
     -- | Use 'Scientific' for all numbers
-  | UseScientificNumbers
+  | UseScientific
   deriving (Show, Eq)
 
 -- | Choose which type to use for strings
@@ -53,6 +53,7 @@ data Options = Options
   , _includeHeader :: Bool
   , _includeInstances :: Bool
   , _strictData :: Bool
+  , _prefixRecordFields :: Bool
   }
 
 
@@ -70,6 +71,7 @@ simpleOptions = Options
     , _includeHeader = True
     , _includeInstances = False
     , _strictData = False
+    , _prefixRecordFields = True
     }
 
 -- | Use more performant data types, use these for production apps.
@@ -82,8 +84,8 @@ performantOptions = Options
     , _listType = UseList
     , _includeHeader = True
     , _includeInstances = False
-    -- TODO
     , _strictData = True
+    , _prefixRecordFields = True
     }
 
 

@@ -19,7 +19,7 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Text.Casing (toCamel, fromAny)
-import Data.Char (isAlpha, isAlphaNum)
+import Data.Char (isAlpha, isAlphaNum, toUpper)
 import Lens.Micro.Platform (view, (+~), (<&>))
 
 
@@ -64,6 +64,14 @@ indented m = do
 
 type Builder a = ReaderT Env (Writer T.Text) ()
 
+writeFieldName :: T.Text -> T.Text -> Builder ()
+writeFieldName recordName fieldName = do
+    addPrefix <- view (options . prefixRecordFields)
+    let fieldName' = if addPrefix 
+                        then recordName <> toRecordName fieldName
+                        else fieldName
+    tell $ toFieldName fieldName'
+
 -- | Write out the Haskell code for a record data type
 writeRecord :: StructName -> RecordFields 'Ref -> Builder ()
 writeRecord name struct = do
@@ -75,7 +83,7 @@ writeRecord name struct = do
         line $ do
             if (i == 0) then tell "{ "
                         else tell ", "
-            tell $ toFieldName k
+            writeFieldName name k
             tell " :: "
             useStrictData <- view (options . strictData)
             when useStrictData (tell "!")
@@ -101,7 +109,7 @@ writeToJSONInstance name struct = do
                                 else tell ", "
                     tell $ "\"" <> escapeQuotes k <> "\""
                     tell " .= "
-                    tell $ toFieldName k
+                    writeFieldName name k
             line . tell $ "] "
 
 -- | Write out the Haskell code for a FromJSON instance for the given record
@@ -113,7 +121,7 @@ writeFromJSONInstance name struct = do
         indented $ do
             for_ (HM.keys struct) $ \k -> do
                 line $ do
-                    tell $ toFieldName k
+                    writeFieldName name k
                     tell " <- v .: "
                     tell $ "\"" <> escapeQuotes k <> "\""
             line $ do
@@ -139,7 +147,7 @@ writeType nested struct = do
         case (pref, t) of
             (UseFloats, _) -> tell "Float"
             (UseDoubles, _) -> tell "Double"
-            (UseScientificNumbers, _) -> tell "Scientific"
+            (UseScientific, _) -> tell "Scientific"
             (UseSmartFloats, Fractional) -> tell "Float"
             (UseSmartFloats, Whole) -> tell "Int"
             (UseSmartDoubles, Fractional) -> tell "Double"
@@ -170,6 +178,9 @@ writeModel :: Options -> BM.Bimap T.Text (RecordFields 'Ref) -> T.Text
 writeModel opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
     incHeader <- view (options . includeHeader)
     incInstances <- view (options . includeInstances)
+    includeScientific <- view (options . numberType) <&> (== UseScientific)
+    includeVector <- view (options . listType) <&> (== UseVector)
+    includeText <- view (options . textType) <&> (== UseText)
     when incHeader $ do
         tell . T.unlines $
             [ "{-# LANGUAGE DuplicateRecordFields #-}"
@@ -177,12 +188,12 @@ writeModel opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
             , "{-# LANGUAGE OverloadedStrings #-}"
             , "module Model where"
             , ""
-            , "import Prelude (Double, Bool, Show, Eq, Ord, ($), pure)"
             , "import Data.Aeson (ToJSON(..), FromJSON(..), Value(..), (.:), (.=), object)"
             , "import Data.Aeson.Types (prependFailure, typeMismatch)"
-            , "import Data.Text (Text)"
-            , "import Data.Vector (Vector)"
             ]
+        when includeVector . line . tell $ "import Data.Vector (Vector)"
+        when includeScientific . line . tell $ "import Data.Scientific (Scientific)"
+        when includeText . line . tell $ "import Data.Text (Text)"
         newline
     void . flip M.traverseWithKey m $ \k v -> do
         writeRecord k v

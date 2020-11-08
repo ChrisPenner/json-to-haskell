@@ -43,7 +43,7 @@ library:
   - -Wincomplete-patterns
 
 executables:
-  json-to-haskell-exe:
+  json-to-haskell:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

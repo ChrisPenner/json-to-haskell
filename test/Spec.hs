@@ -34,10 +34,10 @@ spec = do
                `shouldRender`
                 [r|
 data Model = Model
-  { a :: Double
-  , d :: Double
-  , b :: Text
-  , c :: [Maybe Value]
+  { modelA :: Double
+  , modelD :: Double
+  , modelB :: Text
+  , modelC :: [Maybe Value]
   } deriving (Show, Eq, Ord)
                 |]
         it "should share records definitions for identical subrecords" $ do
@@ -49,13 +49,13 @@ data Model = Model
                `shouldRender`
                 [r|
 data A = A
-  { age :: Double
-  , name :: Text
+  { aAge :: Double
+  , aName :: Text
   } deriving (Show, Eq, Ord)
 
 data Model = Model
-  { a :: A
-  , b :: A
+  { modelA :: A
+  , modelB :: A
   } deriving (Show, Eq, Ord)
                 |]
         it "should pick good names for differing records which share field names" $ do
@@ -67,24 +67,24 @@ data Model = Model
                `shouldRender`
                 [r|
 data A = A
-  { field :: Field
+  { aField :: Field
   } deriving (Show, Eq, Ord)
 
 data B = B
-  { field :: Field2
+  { bField :: Field2
   } deriving (Show, Eq, Ord)
 
 data Field = Field
-  { name :: Text
+  { fieldName :: Text
   } deriving (Show, Eq, Ord)
 
 data Field2 = Field2
-  { age :: Double
+  { field2Age :: Double
   } deriving (Show, Eq, Ord)
 
 data Model = Model
-  { a :: A
-  , b :: B
+  { modelA :: A
+  , modelB :: B
   } deriving (Show, Eq, Ord)
                 |]
         it "should pick the best name if there are multiple possible names but some conflict" $ do
@@ -97,29 +97,29 @@ data Model = Model
                `shouldRender`
                 [r|
 data A = A
-  { field :: Field
+  { aField :: Field
   } deriving (Show, Eq, Ord)
 
 data B = B
-  { field :: Other
+  { bField :: Other
   } deriving (Show, Eq, Ord)
 
 data C = C
-  { other :: Other
+  { cOther :: Other
   } deriving (Show, Eq, Ord)
 
 data Field = Field
-  { name :: Text
+  { fieldName :: Text
   } deriving (Show, Eq, Ord)
 
 data Model = Model
-  { a :: A
-  , b :: B
-  , c :: C
+  { modelA :: A
+  , modelB :: B
+  , modelC :: C
   } deriving (Show, Eq, Ord)
 
 data Other = Other
-  { age :: Double
+  { otherAge :: Double
   } deriving (Show, Eq, Ord)
                 |]
 
@@ -131,10 +131,10 @@ data Other = Other
                `shouldRender`
                 [r|
 data Model = Model
-  { theNam9e :: TheNam9e
+  { modelTheNam9e :: TheNam9e
   } deriving (Show, Eq, Ord)
 
 data TheNam9e = TheNam9e
-  { subField :: Text
+  { theNam9eSubField :: Text
   } deriving (Show, Eq, Ord)
                 |]

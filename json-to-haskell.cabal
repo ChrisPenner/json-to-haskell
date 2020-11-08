@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eef35bf2744a110c2709a6f12e18903f9d8dbee611a19fdf581156997582bc58
+-- hash: c95238f04c404a5eb4fba98349ed2ca5bb5292ae940bd464725e8f369d6bc4ea
 
 name:           json-to-haskell
 version:        0.1.0.0
@@ -52,7 +52,7 @@ library
     , vector
   default-language: Haskell2010
 
-executable json-to-haskell-exe
+executable json-to-haskell
   main-is: Main.hs
   other-modules:
       Flags
