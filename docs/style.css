@@ -1,0 +1,27 @@
+body {
+  padding: 0.5em 1em;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans;
+}
+
+.container {
+  display: flex;
+  flex-flow: row;
+  min-height: 70vh;
+}
+
+.input,
+.output {
+  flex: 1;
+  margin: 0.5em;
+}
+
+.input textarea,
+.output textarea {
+  width: 100%;
+  height: 100%;
+}
+
+h1,
+h2 {
+  text-align: center;
+}

@@ -1,0 +1,133 @@
+code size summary per package:
+
+aeson-1.4.2.0-6oFZmLVQz2fGtrfaZYcFm5:42210
+base:                    319961
+containers-0.6.0.1-BAqcfV1UBBeCIRjPbUYeSG:21918
+ghc-prim:                22651
+ghcjs-base-0.2.0.0-JozYZ7GHc7JEfhDrWZm3NT:68037
+ghcjs-prim-0.1.1.0-EXzjGVHQlAS2XAXcu0iCbS:3473
+integer-gmp:             2731
+main:                    38300
+miso-1.6.0.0-BIKrBXAalCmHCL9FedlhiP:41212
+scientific-0.3.6.2-GYzjCtWA1vQ45VE9CYiZoV:170
+text-1.2.3.1-2mMWCa8HNEL4R4p8nnvwO2:1661
+unordered-containers-0.2.9.0-FFYvp66GotsBzKKo1KOI6a:890
+vector-0.12.0.3-Ljxp3Ug7QBk3GWhyQE0Ewc:8377
+
+
+code size per module:
+
+aeson-1.4.2.0-6oFZmLVQz2fGtrfaZYcFm5
+    Data.Aeson.Types.FromJSON:          7294
+    Data.Aeson.Types.Internal:          34916
+
+base
+    Control.Exception.Base:             1
+    Data.Either:                        600
+    Data.OldList:                       46127
+    Data.Typeable.Internal:             10121
+    Foreign.C.Error:                    873
+    Foreign.Marshal.Alloc:              2644
+    Foreign.Storable:                   2690
+    GHC.Arr:                            3713
+    GHC.Base:                           6224
+    GHC.Conc.Sync:                      144
+    GHC.Enum:                           132
+    GHC.Err:                            7564
+    GHC.Exception:                      2478
+    GHC.Exception.Type:                 5584
+    GHC.Fingerprint:                    546
+    GHC.Fingerprint.Type:               24770
+    GHC.Float:                          11045
+    GHC.Foreign:                        160
+    GHC.ForeignPtr:                     1705
+    GHC.IO:                             737
+    GHC.IO.Buffer:                      1
+    GHC.IO.BufferedIO:                  539
+    GHC.IO.Device:                      398
+    GHC.IO.Encoding:                    592
+    GHC.IO.Encoding.Failure:            2567
+    GHC.IO.Encoding.Latin1:             1
+    GHC.IO.Encoding.Types:              57824
+    GHC.IO.Encoding.UTF8:               9586
+    GHC.IO.Exception:                   26057
+    GHC.IO.FD:                          274
+    GHC.IO.Handle:                      4913
+    GHC.IO.Handle.FD:                   30747
+    GHC.IO.Handle.Internals:            16259
+    GHC.IO.Handle.Text:                 1906
+    GHC.IO.Handle.Types:                373
+    GHC.Int:                            2596
+    GHC.List:                           1
+    GHC.MVar:                           113
+    GHC.Maybe:                          105
+    GHC.Num:                            113
+    GHC.Ptr:                            1473
+    GHC.Real:                           1
+    GHC.STRef:                          4364
+    GHC.Show:                           3966
+    GHC.Stack.CCS:                      488
+    GHC.Stack.Types:                    9826
+    GHC.TopHandler:                     1
+    GHC.Word:                           13408
+    System.Posix.Internals:             3611
+
+containers-0.6.0.1-BAqcfV1UBBeCIRjPbUYeSG
+    Data.Map.Internal:                  21528
+    Data.Sequence.Internal:             390
+
+ghc-prim
+    GHC.CString:                        550
+    GHC.Classes:                        139
+    GHC.IntWord64:                      1747
+    GHC.Tuple:                          292
+    GHC.Types:                          19923
+
+ghcjs-base-0.2.0.0-JozYZ7GHc7JEfhDrWZm3NT
+    GHCJS.Foreign.Internal:             26921
+    GHCJS.Marshal:                      1
+    GHCJS.Marshal.Internal:             289
+    GHCJS.Marshal.Pure:                 591
+    JavaScript.Array.Internal:          890
+    JavaScript.Web.AnimationFrame:      39345
+
+ghcjs-prim-0.1.1.0-EXzjGVHQlAS2XAXcu0iCbS
+    GHCJS.Prim:                         2690
+    GHCJS.Prim.Internal:                783
+
+integer-gmp
+    GHC.Integer.Type:                   2731
+
+main
+    Main:                               38300
+
+miso-1.6.0.0-BIKrBXAalCmHCL9FedlhiP
+    Miso:                               1888
+    Miso.Delegate:                      1992
+    Miso.Diff:                          1
+    Miso.Effect:                        515
+    Miso.Event.Decoder:                 15999
+    Miso.Event.Types:                   302
+    Miso.Html.Element:                  152
+    Miso.Html.Event:                    17838
+    Miso.Html.Internal:                 2525
+
+scientific-0.3.6.2-GYzjCtWA1vQ45VE9CYiZoV
+    Data.Scientific:                    170
+
+text-1.2.3.1-2mMWCa8HNEL4R4p8nnvwO2
+    Data.Text.Array:                    670
+    Data.Text.Internal:                 991
+
+unordered-containers-0.2.9.0-FFYvp66GotsBzKKo1KOI6a
+    Data.HashMap.Array:                 658
+    Data.HashMap.Base:                  232
+
+vector-0.12.0.3-Ljxp3Ug7QBk3GWhyQE0Ewc
+    Data.Vector:                        496
+    Data.Vector.Mutable:                7881
+
+
+
+packed metadata: 191996
+
