@@ -39,4 +39,4 @@ valueStr = [r|
 main :: IO ()
 main = do
     v <- either fail pure value
-    T.putStrLn $ json2Haskell defaultOptions v
+    T.putStrLn $ jsonToHaskell performantOptions v

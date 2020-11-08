@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -6,6 +7,7 @@
 {-# LANGUAGE GADTs #-}
 module JsonToHaskell.Internal.Printer where
 
+import Lens.Micro.Platform (makeLenses)
 import JsonToHaskell.Internal.Parser
 import JsonToHaskell.Internal.Options
 import Control.Monad.State
@@ -19,6 +21,15 @@ import qualified Data.Text as T
 import Text.Casing (toCamel, fromAny)
 import Data.Char (isAlpha, isAlphaNum)
 import Lens.Micro.Platform (view, (+~), (<&>))
+
+
+-- | The environment used for printing the module
+data Env = Env
+    { _options :: Options
+    , _indentationLevel  :: Int
+    }
+makeLenses ''Env
+
 
 
 -- | Convert a name into a valid haskell field name
@@ -66,7 +77,9 @@ writeRecord name struct = do
                         else tell ", "
             tell $ toFieldName k
             tell " :: "
-            buildType v
+            useStrictData <- view (options . strictData)
+            when useStrictData (tell "!")
+            writeType False v
     indented . line $ do
         tell "} "
         tell "deriving (Show, Eq, Ord)"
@@ -113,29 +126,32 @@ writeFromJSONInstance name struct = do
 
 
 -- | Write out the Haskell representation for a given JSON type
-buildType :: Struct 'Ref -> Builder ()
-buildType =
-  \case
-    SNull -> tell "()"
+writeType :: Bool -> Struct 'Ref -> Builder ()
+writeType nested struct = do
+  strict <- view (options . strictData)
+  let wrapOuter = if strict || nested then parens else id
+  -- let wrapInner = if nested then parens else id
+  case struct of
+    SNull -> wrapOuter $ tell "Maybe Value"
     SString -> do
         getTextType >>= tell
     SNumber t -> do
-        pref <- view (options . numberPreference)
+        pref <- view (options . numberType)
         case (pref, t) of
-            (FloatNumbers, _) -> tell "Float"
-            (DoubleNumbers, _) -> tell "Double"
-            (ScientificNumbers, _) -> tell "Scientific"
-            (SmartFloats, Fractional) -> tell "Float"
-            (SmartFloats, Whole) -> tell "Int"
-            (SmartDoubles, Fractional) -> tell "Double"
-            (SmartDoubles, Whole) -> tell "Int"
+            (UseFloatNumbers, _) -> tell "Float"
+            (UseDoubleNumbers, _) -> tell "Double"
+            (UseScientificNumbers, _) -> tell "Scientific"
+            (UseSmartFloats, Fractional) -> tell "Float"
+            (UseSmartFloats, Whole) -> tell "Int"
+            (UseSmartDoubles, Fractional) -> tell "Double"
+            (UseSmartDoubles, Whole) -> tell "Int"
 
     SBool -> tell "Bool"
     SValue -> tell "Value"
     SMap s -> do
         txtType <- getTextType
-        tell ("Map " <> txtType <> " ") >> parens (buildType s)
-    SArray s -> tell "Vector " >> parens (buildType s)
+        wrapOuter $ tell ("Map " <> txtType <> " ") >> writeType True s
+    SArray s -> wrapOuter $ tell "Vector " >> writeType True s
     SRecordRef n -> tell n
   where
     getTextType = do

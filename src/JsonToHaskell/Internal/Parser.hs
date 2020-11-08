@@ -8,7 +8,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module JsonToHaskell.Internal.Parser where
 
-import JsonToHaskell.Internal.Options
 import Control.Monad.State
 import Control.Monad.Reader
 import Data.Aeson (Value)
@@ -27,6 +26,10 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Data.Set as S
 
+-- | Used to track whether the value was fractional or whole.
+data NumberVariant = Fractional | Whole
+  deriving (Show, Eq, Ord)
+
 -- a DataKind for tracking whether a structure contains nested structs or Record Names
 data RecordType = Ref | Structure
 -- | The representation of a record's field types
@@ -38,7 +41,7 @@ data Struct (r :: RecordType) where
         SRecordRef :: T.Text -> Struct 'Ref
         SMap :: Struct r -> Struct r
         SBool :: Struct r
-        SNumber :: NumberType -> Struct r
+        SNumber :: NumberVariant -> Struct r
         SNull :: Struct r
         SString :: Struct r
         SValue :: Struct r

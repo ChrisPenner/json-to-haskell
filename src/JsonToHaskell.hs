@@ -10,9 +10,14 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 module JsonToHaskell
-    ( json2Haskell
+    ( jsonToHaskell
+    , simpleOptions
+    , performantOptions
     , Options(..)
-    , defaultOptions
+    , NumberType(..)
+    , TextType(..)
+    , MapType(..)
+    , ListType(..)
     ) where
 
 import JsonToHaskell.Internal.Options
@@ -22,8 +27,12 @@ import Data.Aeson (Value)
 import qualified Data.Text as T
 import qualified Data.Bimap as BM
 
-json2Haskell :: Options -> Value -> T.Text
-json2Haskell opts v = do
+-- | Transform an Aeson 'Value' into a complete Haskell module (as 'T.Text').
+-- This function is all that you need.
+--
+-- Use 'defaultOptions' as a reasonable starting point.
+jsonToHaskell :: Options -> Value -> T.Text
+jsonToHaskell opts v = do
     let allStructs = analyze v
         namedStructs = canonicalizeRecordNames allStructs
         referencedStructs = BM.mapR (fmap (addReferences namedStructs)) namedStructs
