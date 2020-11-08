@@ -104,6 +104,9 @@ optionParser = do
     _includeHeader <- flag True False
                 (long "no-module-header"
                  <> stringDoc [r|Omit the module header containing language extensions, module definition and imports.|])
+    _includeInstances <- flag True False
+                (long "no-instances"
+                 <> stringDoc [r|Omit the ToJSON and FromJSON instances.|])
     _strictData <- flag False True
                 (long "strict"
                  <> stringDoc [r|Use strict record fields.|])

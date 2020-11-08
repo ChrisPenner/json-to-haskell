@@ -51,7 +51,7 @@ data Options = Options
   , _mapType :: MapType
   , _listType :: ListType
   , _includeHeader :: Bool
-  -- , _stronglyNormalize :: Bool
+  , _includeInstances :: Bool
   , _strictData :: Bool
   }
 
@@ -67,8 +67,8 @@ simpleOptions = Options
     , _textType = UseText
     , _mapType = UseMap
     , _listType = UseList
-    , _includeHeader = False
-    -- , _stronglyNormalize = True
+    , _includeHeader = True
+    , _includeInstances = False
     , _strictData = False
     }
 
@@ -80,9 +80,9 @@ performantOptions = Options
     , _textType = UseText
     , _mapType = UseMap
     , _listType = UseList
-    , _includeHeader = False
+    , _includeHeader = True
+    , _includeInstances = False
     -- TODO
-    -- , _stronglyNormalize = True
     , _strictData = True
     }
 

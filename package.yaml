@@ -1,10 +1,10 @@
 name:                json-to-haskell
 version:             0.1.0.0
-github:              "githubuser/json-to-haskell"
+github:              "ChrisPenner/json-to-haskell"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2020 Author name here"
+author:              "Chris Penner"
+maintainer:          "christopher.penner@gmail.com"
+copyright:           "2020 Chris Penner"
 
 extra-source-files:
 - README.md
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/json-to-haskell#readme>
+description:         Please see the README on GitHub at <https://github.com/ChrisPenner/json-to-haskell#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -68,3 +68,6 @@ tests:
     dependencies:
     - json-to-haskell
     - hspec
+    - text
+    - bytestring
+    - raw-strings-qq

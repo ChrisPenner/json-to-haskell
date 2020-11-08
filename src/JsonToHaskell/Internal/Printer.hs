@@ -168,29 +168,32 @@ writeType nested struct = do
 -- | Write out all the given records and their instances
 writeModel :: Options -> BM.Bimap T.Text (RecordFields 'Ref) -> T.Text
 writeModel opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
-    tell . T.unlines $
-        [ "{-# LANGUAGE DuplicateRecordFields #-}"
-        , "{-# LANGUAGE RecordWildCards #-}"
-        , "{-# LANGUAGE OverloadedStrings #-}"
-        , "module Model where"
-        , ""
-        , "import Prelude (Double, Bool, Show, Eq, Ord, ($), pure)"
-        , "import Data.Aeson (ToJSON(..), FromJSON(..), Value(..), (.:), (.=), object)"
-        , "import Data.Aeson.Types (prependFailure, typeMismatch)"
-        , "import Data.Text (Text)"
-        , "import Data.Vector (Vector)"
-        ]
-
-    newline
+    incHeader <- view (options . includeHeader)
+    incInstances <- view (options . includeInstances)
+    when incHeader $ do
+        tell . T.unlines $
+            [ "{-# LANGUAGE DuplicateRecordFields #-}"
+            , "{-# LANGUAGE RecordWildCards #-}"
+            , "{-# LANGUAGE OverloadedStrings #-}"
+            , "module Model where"
+            , ""
+            , "import Prelude (Double, Bool, Show, Eq, Ord, ($), pure)"
+            , "import Data.Aeson (ToJSON(..), FromJSON(..), Value(..), (.:), (.=), object)"
+            , "import Data.Aeson.Types (prependFailure, typeMismatch)"
+            , "import Data.Text (Text)"
+            , "import Data.Vector (Vector)"
+            ]
+        newline
     void . flip M.traverseWithKey m $ \k v -> do
         writeRecord k v
         newline
-    void . flip M.traverseWithKey m $ \k v -> do
-        writeToJSONInstance k v
-        newline
-    void . flip M.traverseWithKey m $ \k v -> do
-        writeFromJSONInstance k v
-        newline
+    when incInstances $ do
+        void . flip M.traverseWithKey m $ \k v -> do
+            writeToJSONInstance k v
+            newline
+        void . flip M.traverseWithKey m $ \k v -> do
+            writeFromJSONInstance k v
+            newline
 
 escapeQuotes :: T.Text -> T.Text
 escapeQuotes = T.replace "\"" "\\\""

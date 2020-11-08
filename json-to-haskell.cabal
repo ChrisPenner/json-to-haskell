@@ -4,16 +4,16 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ccb186e695b31c1b3ebeb957e8b52dc2a25db22eac621ea58f87a819385927f5
+-- hash: eef35bf2744a110c2709a6f12e18903f9d8dbee611a19fdf581156997582bc58
 
 name:           json-to-haskell
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/json-to-haskell#readme>
-homepage:       https://github.com/githubuser/json-to-haskell#readme
-bug-reports:    https://github.com/githubuser/json-to-haskell/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2020 Author name here
+description:    Please see the README on GitHub at <https://github.com/ChrisPenner/json-to-haskell#readme>
+homepage:       https://github.com/ChrisPenner/json-to-haskell#readme
+bug-reports:    https://github.com/ChrisPenner/json-to-haskell/issues
+author:         Chris Penner
+maintainer:     christopher.penner@gmail.com
+copyright:      2020 Chris Penner
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -23,7 +23,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/json-to-haskell
+  location: https://github.com/ChrisPenner/json-to-haskell
 
 library
   exposed-modules:
@@ -94,6 +94,7 @@ test-suite json-to-haskell-test
     , aeson-extra
     , base >=4.7 && <5
     , bimap
+    , bytestring
     , casing
     , containers
     , hspec
@@ -101,6 +102,7 @@ test-suite json-to-haskell-test
     , microlens-platform
     , mtl
     , nonempty-containers
+    , raw-strings-qq
     , recursion-schemes
     , text
     , unordered-containers

@@ -3,13 +3,7 @@ cradle:
     - path: "./src"
       component: "json-to-haskell:lib"
 
-    - path: "./app/Main.hs"
-      component: "json-to-haskell:exe:json-to-haskell-exe"
-
-    - path: "./app/Flags.hs"
-      component: "json-to-haskell:exe:json-to-haskell-exe"
-
-    - path: "./app/Paths_json_to_haskell.hs"
+    - path: "./app"
       component: "json-to-haskell:exe:json-to-haskell-exe"
 
     - path: "./test"

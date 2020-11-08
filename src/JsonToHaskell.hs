@@ -36,4 +36,4 @@ jsonToHaskell opts v = do
     let allStructs = analyze v
         namedStructs = canonicalizeRecordNames allStructs
         referencedStructs = BM.mapR (fmap (addReferences namedStructs)) namedStructs
-     in writeModel opts referencedStructs
+     in T.strip $ writeModel opts referencedStructs
