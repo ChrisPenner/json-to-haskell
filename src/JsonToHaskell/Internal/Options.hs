@@ -10,9 +10,9 @@ data NumberType =
     -- | Use 'Int' for whole numbers, 'Double' for decimals
   | UseSmartDoubles
     -- | Use 'Float' for all numbers
-  | UseFloatNumbers
+  | UseFloats
     -- | Use 'Double' for all numbers
-  | UseDoubleNumbers
+  | UseDoubles
     -- | Use 'Scientific' for all numbers
   | UseScientificNumbers
   deriving (Show, Eq)
@@ -50,7 +50,7 @@ data Options = Options
   , _textType :: TextType
   , _mapType :: MapType
   , _listType :: ListType
-  , _includeImports :: Bool
+  , _includeHeader :: Bool
   -- , _stronglyNormalize :: Bool
   , _strictData :: Bool
   }
@@ -63,11 +63,11 @@ makeLenses ''Options
 simpleOptions :: Options
 simpleOptions = Options
     { _tabStop = 2
-    , _numberType = UseDoubleNumbers
+    , _numberType = UseDoubles
     , _textType = UseText
     , _mapType = UseMap
     , _listType = UseList
-    , _includeImports = False
+    , _includeHeader = False
     -- , _stronglyNormalize = True
     , _strictData = False
     }
@@ -76,11 +76,11 @@ simpleOptions = Options
 performantOptions :: Options
 performantOptions = Options
     { _tabStop = 2
-    , _numberType = UseDoubleNumbers
+    , _numberType = UseDoubles
     , _textType = UseText
     , _mapType = UseMap
     , _listType = UseList
-    , _includeImports = False
+    , _includeHeader = False
     -- TODO
     -- , _stronglyNormalize = True
     , _strictData = True

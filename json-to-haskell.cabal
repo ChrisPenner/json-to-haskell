@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1079a1406cdee3bc2efef1e996c7a1567e6e39d4c155e7edbaafb79a86a52880
+-- hash: 6956d926dd95ddce520484fc163b0d5a0c371f633e2971caae573ed0ea508964
 
 name:           json-to-haskell
 version:        0.0.1.0
@@ -55,6 +55,7 @@ library
 executable json-to-haskell-exe
   main-is: Main.hs
   other-modules:
+      Flags
       Paths_json_to_haskell
   hs-source-dirs:
       app
@@ -71,6 +72,7 @@ executable json-to-haskell-exe
     , microlens-platform
     , mtl
     , nonempty-containers
+    , optparse-applicative
     , raw-strings-qq
     , recursion-schemes
     , text

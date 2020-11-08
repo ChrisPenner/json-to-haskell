@@ -6,6 +6,9 @@ cradle:
     - path: "./app/Main.hs"
       component: "json-to-haskell:exe:json-to-haskell-exe"
 
+    - path: "./app/Flags.hs"
+      component: "json-to-haskell:exe:json-to-haskell-exe"
+
     - path: "./app/Paths_json_to_haskell.hs"
       component: "json-to-haskell:exe:json-to-haskell-exe"
 

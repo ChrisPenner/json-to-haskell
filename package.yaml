@@ -53,6 +53,7 @@ executables:
     dependencies:
     - json-to-haskell
     - raw-strings-qq
+    - optparse-applicative
     - bytestring
 
 tests:

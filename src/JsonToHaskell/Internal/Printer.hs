@@ -138,8 +138,8 @@ writeType nested struct = do
     SNumber t -> do
         pref <- view (options . numberType)
         case (pref, t) of
-            (UseFloatNumbers, _) -> tell "Float"
-            (UseDoubleNumbers, _) -> tell "Double"
+            (UseFloats, _) -> tell "Float"
+            (UseDoubles, _) -> tell "Double"
             (UseScientificNumbers, _) -> tell "Scientific"
             (UseSmartFloats, Fractional) -> tell "Float"
             (UseSmartFloats, Whole) -> tell "Int"
