@@ -4,12 +4,12 @@
 module Main where
 
 import JsonToHaskell
-import Data.Aeson hiding (defaultOptions)
 import qualified Data.Text.IO as T
 import qualified Data.ByteString.Lazy as BL
 import Options.Applicative
 import System.Exit
 import Flags
+import Data.Aeson
 
 main :: IO ()
 main = do
