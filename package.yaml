@@ -1,5 +1,5 @@
 name:                json-to-haskell
-version:             0.1.0.0
+version:             0.1.1.0
 github:              "ChrisPenner/json-to-haskell"
 license:             BSD3
 author:              "Chris Penner"
