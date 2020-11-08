@@ -9,7 +9,7 @@ import JsonToHaskell
 import Text.RawString.QQ (r)
 
 optionsParserInfo :: ParserInfo Options
-optionsParserInfo = info optionParser fullDesc 
+optionsParserInfo = info (optionParser <**> helper) fullDesc
 
 parseNumberType :: ReadM NumberType
 parseNumberType = maybeReader $ \case

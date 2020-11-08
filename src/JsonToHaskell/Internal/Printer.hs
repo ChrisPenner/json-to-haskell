@@ -150,8 +150,14 @@ writeType nested struct = do
     SValue -> tell "Value"
     SMap s -> do
         txtType <- getTextType
-        wrapOuter $ tell ("Map " <> txtType <> " ") >> writeType True s
-    SArray s -> wrapOuter $ tell "Vector " >> writeType True s
+        mapStr <- view (options . mapType) <&> \case
+            UseMap -> "Map"
+            UseHashMap -> "HashMap"
+        wrapOuter $ tell (mapStr <> " " <> txtType <> " ") >> writeType True s
+    SArray s -> do
+        view (options . listType) >>= \case
+          UseList -> tell "[" >> writeType True s >> tell "]"
+          UseVector -> wrapOuter $ tell "Vector " >> writeType True s
     SRecordRef n -> tell n
   where
     getTextType = do
