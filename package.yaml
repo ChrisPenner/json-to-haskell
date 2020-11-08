@@ -55,6 +55,7 @@ executables:
     - raw-strings-qq
     - optparse-applicative
     - bytestring
+    - ansi-wl-pprint
 
 tests:
   json-to-haskell-test:

@@ -7,6 +7,7 @@ module Flags where
 import Options.Applicative
 import JsonToHaskell
 import Text.RawString.QQ (r)
+import Text.PrettyPrint.ANSI.Leijen
 
 optionsParserInfo :: ParserInfo Options
 optionsParserInfo = info (optionParser <**> helper) fullDesc
@@ -38,38 +39,39 @@ parseListType = maybeReader $ \case
   "vector" -> Just UseVector
   _ -> Nothing
 
-
+stringDoc :: String -> Mod f a
+stringDoc = helpDoc . Just . string
 
 optionParser :: Parser Options
 optionParser = do
     _tabStop <- option auto
                 (short 't'
                  <> long "tab-stop"
-                 <> help "Number of spaces to indent each level."
+                 <> stringDoc "Number of spaces to indent each level."
                  <> value 2)
     _numberType <- option parseNumberType
                 (short 'n'
                  <> long "numbers"
                  <> value UseSmartDoubles
-                 <> help [r|Type to use for numbers.
-Options:
+                 <> stringDoc [r|Type to use for numbers.
+
 'smart-floats':
-  Use floats for numbers with decimals, Int for whole numbers.
+    Use floats for numbers with decimals, Int for whole numbers.
 'smart-doubles':
-  Use floats for numbers with decimals, Int for whole numbers.
+    Use floats for numbers with decimals, Int for whole numbers.
 'floats':
-  Use floats for all numbers.
+    Use floats for all numbers.
 'doubles':
-  Use doubles for all numbers.
+    Use doubles for all numbers.
 'scientific':
-  Use scientific for all numbers.
+    Use scientific for all numbers.
 |])
     _textType <- option parseTextType
                 (short 's'
                  <> long "strings"
                  <> value UseText
-                 <> help [r|Type to use for strings.
-Options:
+                 <> stringDoc [r|Type to use for strings.
+
 'string':
   Use String for strings.
 'text':
@@ -81,8 +83,8 @@ Options:
                 (short 'm'
                  <> long "maps"
                  <> value UseMap
-                 <> help [r|Type to use for maps.
-Options:
+                 <> stringDoc [r|Type to use for maps.
+
 'map':
   Use Data.Map for maps.
 'hashmap':
@@ -92,8 +94,8 @@ Options:
                 (short 'l'
                  <> long "lists"
                  <> value UseList
-                 <> help [r|Type to use for lists.
-Options:
+                 <> stringDoc [r|Type to use for lists.
+
 'list':
   Use [] for lists.
 'vector':
@@ -101,8 +103,8 @@ Options:
 |])
     _includeHeader <- flag True False
                 (long "no-module-header"
-                 <> help [r|Omit the module header containing language extensions, module definition and imports.|])
+                 <> stringDoc [r|Omit the module header containing language extensions, module definition and imports.|])
     _strictData <- flag False True
                 (long "strict"
-                 <> help [r|Use strict record fields.|])
+                 <> stringDoc [r|Use strict record fields.|])
     pure $ Options {.. }

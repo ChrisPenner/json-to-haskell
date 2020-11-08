@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6956d926dd95ddce520484fc163b0d5a0c371f633e2971caae573ed0ea508964
+-- hash: 66b2e808b64911615d93a9e6c264b3b4f7c098f4e15a031bf9478a0d57d8aaa1
 
 name:           json-to-haskell
 version:        0.0.1.0
@@ -63,6 +63,7 @@ executable json-to-haskell-exe
   build-depends:
       aeson
     , aeson-extra
+    , ansi-wl-pprint
     , base >=4.7 && <5
     , bimap
     , bytestring

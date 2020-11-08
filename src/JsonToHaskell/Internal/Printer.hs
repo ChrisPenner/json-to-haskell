@@ -130,7 +130,6 @@ writeType :: Bool -> Struct 'Ref -> Builder ()
 writeType nested struct = do
   strict <- view (options . strictData)
   let wrapOuter = if strict || nested then parens else id
-  -- let wrapInner = if nested then parens else id
   case struct of
     SNull -> wrapOuter $ tell "Maybe Value"
     SString -> do
