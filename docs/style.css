@@ -46,3 +46,10 @@ label {
   border: 1px solid gray;
   border-radius: 5px;
 }
+
+.install textarea {
+  width: 240px;
+  height: 20px;
+  padding: 5px;
+  resize: none;
+}
