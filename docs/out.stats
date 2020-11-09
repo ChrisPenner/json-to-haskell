@@ -8,12 +8,12 @@ bimap-0.3.3-56XO0CrU8v9F3kNCpYtXeW:1429
 bytestring-0.10.8.2-FBklFuapa1a7kq4yflY7Bt:24406
 casing-0.1.4.0-6neY1RN3Kg74kGTlBz0Cvf:55113
 containers-0.6.0.1-BAqcfV1UBBeCIRjPbUYeSG:65209
-ghc-prim:                35638
+ghc-prim:                35847
 ghcjs-base-0.2.0.0-EjoE99fiFSxxkwn8hxotx:27696
 ghcjs-prim-0.1.1.0-EXzjGVHQlAS2XAXcu0iCbS:3496
 integer-gmp:             2109
 integer-logarithms-1.0.3-8EbIvyaPt1VK2rKaCK88I2:26095
-json-to-haskell-0.1.1.0-2zd4XtN4hKsbf6bYD36i8:742656
+json-to-haskell-0.1.1.1-4jUCHG4Ih9sKXPYRWr1JyK:751638
 main:                    46912
 miso-0.21.2.0-2b5PVYCvLL0DtqAgGXpMDL:45678
 nonempty-containers-0.1.1.0-8BkGFUXFJceDfD0fKXa3NC:1
@@ -22,7 +22,7 @@ scientific-0.3.6.2-9q8JP2eLKMJ7fUGkyRpkGr:20260
 split-0.2.3.3-LGnyxBzrKWwJCmCgeKG5L:26251
 text-1.2.3.1-2mMWCa8HNEL4R4p8nnvwO2:40112
 unordered-containers-0.2.9.0-ENnNUDBCeYM3LeK1fMybtG:25157
-vector-0.12.0.3-Ljxp3Ug7QBk3GWhyQE0Ewc:59111
+vector-0.12.0.3-Ljxp3Ug7QBk3GWhyQE0Ewc:59003
 
 
 code size per module:
@@ -119,7 +119,7 @@ ghc-prim
     GHC.Classes:                        139
     GHC.IntWord64:                      1747
     GHC.Tuple:                          125
-    GHC.Types:                          29844
+    GHC.Types:                          30053
 
 ghcjs-base-0.2.0.0-EjoE99fiFSxxkwn8hxotx
     Data.JSString:                      110
@@ -142,10 +142,10 @@ integer-gmp
 integer-logarithms-1.0.3-8EbIvyaPt1VK2rKaCK88I2
     Math.NumberTheory.Logarithms:       26095
 
-json-to-haskell-0.1.1.0-2zd4XtN4hKsbf6bYD36i8
+json-to-haskell-0.1.1.1-4jUCHG4Ih9sKXPYRWr1JyK
     JsonToHaskell:                      4257
-    JsonToHaskell.Internal.Options:     73505
-    JsonToHaskell.Internal.Parser:      626597
+    JsonToHaskell.Internal.Options:     71800
+    JsonToHaskell.Internal.Parser:      637284
     JsonToHaskell.Internal.Printer:     38297
 
 main
@@ -197,9 +197,9 @@ unordered-containers-0.2.9.0-ENnNUDBCeYM3LeK1fMybtG
 
 vector-0.12.0.3-Ljxp3Ug7QBk3GWhyQE0Ewc
     Data.Vector:                        498
-    Data.Vector.Mutable:                58613
+    Data.Vector.Mutable:                58505
 
 
 
-packed metadata: 502259
+packed metadata: 507428
 

@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 65d00b5d14a553066c2b8ecf023d27cd097b384b29843540e4273883dff5d436
+-- hash: 2c356673661763f7b6e9541e054c697801872e029c40f11d3ca0f795c52037cf
 
 name:           json-to-haskell
-version:        0.1.1.0
+version:        0.1.1.1
 description:    Please see the README on GitHub at <https://github.com/ChrisPenner/json-to-haskell#readme>
 homepage:       https://github.com/ChrisPenner/json-to-haskell#readme
 bug-reports:    https://github.com/ChrisPenner/json-to-haskell/issues
@@ -19,7 +19,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    ChangeLog.md
+    CHANGElOG.md
 
 source-repository head
   type: git
