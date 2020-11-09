@@ -15,7 +15,7 @@ data NumberType =
   | UseDoubles
     -- | Use 'Scientific' for all numbers
   | UseScientific
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 -- | Choose which type to use for strings
 data TextType =
@@ -25,7 +25,7 @@ data TextType =
   | UseText
     -- | Use 'ByteString' for strings
   | UseByteString
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 -- | Choose which type to use for key-value maps
 data MapType =
@@ -33,7 +33,7 @@ data MapType =
     UseMap
     -- | Use Data.HashMap
   | UseHashMap
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 -- | Choose which type to use for arrays
 data ListType =
@@ -41,7 +41,7 @@ data ListType =
     UseList
     -- | Use vectors
   | UseVector
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 -- | Options for module generation
 data Options = Options
@@ -54,7 +54,7 @@ data Options = Options
   , _includeInstances :: Bool
   , _strictData :: Bool
   , _prefixRecordFields :: Bool
-  }
+  } deriving (Show, Eq, Ord)
 
 
 makeLenses ''Options

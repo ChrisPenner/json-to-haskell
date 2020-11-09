@@ -25,3 +25,24 @@ h1,
 h2 {
   text-align: center;
 }
+
+.settings {
+  margin: auto;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+.checkboxes {
+  margin-bottom: 2em;
+}
+
+select {
+  margin-left: 1em;
+}
+
+label {
+  margin: 2em 2em 2em 0;
+  padding: 5px;
+  border: 1px solid gray;
+  border-radius: 5px;
+}

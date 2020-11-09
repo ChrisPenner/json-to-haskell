@@ -19,7 +19,7 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Text.Casing (toCamel, fromAny)
-import Data.Char (isAlpha, isAlphaNum, toUpper)
+import Data.Char (isAlpha, isAlphaNum)
 import Lens.Micro.Platform (view, (+~), (<&>))
 
 
@@ -181,6 +181,7 @@ writeModel opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
     includeScientific <- view (options . numberType) <&> (== UseScientific)
     includeVector <- view (options . listType) <&> (== UseVector)
     includeText <- view (options . textType) <&> (== UseText)
+    includeByteString <- view (options . textType) <&> (== UseByteString)
     when incHeader $ do
         tell . T.unlines $
             [ "{-# LANGUAGE DuplicateRecordFields #-}"
@@ -194,6 +195,7 @@ writeModel opts (BM.toMap -> m) = execWriter . flip runReaderT (Env opts 0) $ do
         when includeVector . line . tell $ "import Data.Vector (Vector)"
         when includeScientific . line . tell $ "import Data.Scientific (Scientific)"
         when includeText . line . tell $ "import Data.Text (Text)"
+        when includeByteString . line . tell $ "import Data.ByteString (ByteString)"
         newline
     void . flip M.traverseWithKey m $ \k v -> do
         writeRecord k v
