@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2c356673661763f7b6e9541e054c697801872e029c40f11d3ca0f795c52037cf
+-- hash: 14e58e3afb77700df3148e90f09b1a9674151f745b6f0e57352d0903bd650076
 
 name:           json-to-haskell
 version:        0.1.1.1
@@ -19,7 +19,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    CHANGElOG.md
+    CHANGELOG.md
 
 source-repository head
   type: git
