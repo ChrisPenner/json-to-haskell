@@ -75,10 +75,9 @@ analyze value =
             nameRecord m'
             pure $ SRecord m'
         ArrayF itemsM -> do
-            items <- sequenceA itemsM
-            pure $ case (items V.!? 0) of
-                Just s  -> SArray s
-                Nothing -> SArray SValue
+            case (itemsM V.!? 0) of
+                Just s  -> SArray <$> s
+                Nothing -> pure $ SArray SValue
         StringF _     -> pure SString
         NumberF n     -> pure . SNumber
             $ if (ceiling n == (floor n :: Int))
