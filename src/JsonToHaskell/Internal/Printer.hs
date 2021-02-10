@@ -127,7 +127,7 @@ writeFromJSONInstance name struct = do
             line $ do
                 tell $ "pure $ " <> name
                 when (not . HM.null $ struct) $ tell "{..}"
-        line $ tell $ "parseJSON invalid = do"
+        line $ tell $ "parseJSON invalid ="
         indented $ do
           line . tell $ "prependFailure \"parsing " <> name <> " failed, \""
           indented . line . tell $ "(typeMismatch \"Object\" invalid)"
